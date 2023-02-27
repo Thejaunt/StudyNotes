@@ -1,0 +1,13 @@
+<!doctype html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title> {% block title %} Title {% endblock title %}</title>
+</head>
+<body>
+    {% block sidebar%}Sidebar{% endblock sidebar %}
+    {% block content %}Content{% endblock content %}
+</body>
+</html>
