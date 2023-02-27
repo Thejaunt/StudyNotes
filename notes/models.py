@@ -7,10 +7,8 @@ class CustomUser(AbstractUser):
     pass
     # profile_img = models.ImageField()
 
-    
     def __str__(self):
         return self.username
-
 
 
 class Notes(models.Model):
