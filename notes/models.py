@@ -1,14 +1,25 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.conf import settings
+from django.utils import timezone
+from django.utils.translation import gettext_lazy as gl
+from .managers import CustomUserManager
 
 
-class CustomUser(AbstractUser):
-    pass
+class CustomUser(AbstractBaseUser, PermissionsMixin):
     # profile_img = models.ImageField()
+    email = models.EmailField(gl('email address'), unique=True, max_length=100)
+    is_staff = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    date_joined = models.DateTimeField(default=timezone.now)
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
+
+    objects = CustomUserManager()
 
     def __str__(self):
-        return self.username
+        return self.email
 
 
 class Notes(models.Model):
@@ -18,7 +29,7 @@ class Notes(models.Model):
     image = models.ImageField()
     # video 
     link = models.URLField()
-    is_publick = models.BooleanField(default=False)
+    is_public = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -26,7 +37,6 @@ class Notes(models.Model):
 class Tags(models.Model):
     tag = models.CharField(max_length=80, unique=True)
     note = models.ManyToManyField(Notes, through='NotesTags')
-
 
 
 class NotesTags(models.Model):
