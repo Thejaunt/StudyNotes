@@ -1,35 +1,30 @@
 {% extends 'base.html' %}
 {% block content %}
-<h1>Registration</h1>
 
+<h1>Registration</h1>
 <form method="POST">
     {% csrf_token %}
-
-    <div class="form-control">
+    <div>
         {{ form.email }}
         <label>Email</label>
     </div>
     <p style="color:red;">
-        {% if form.errors %}
         {{ form.email.errors }}
-
         </p>
-    <div class="form-control">
+    <div>
         {{ form.password1 }}
         <label>Password</label>
     </div>
         <p style="color:red;">
         {{ form.password1.errors }}
         </p>
-
-    <div class="form-control">
+    <div>
         {{ form.password2 }}
         <label >Confirm password</label>
     </div>
-    <p style="color:red;">
+    <p style="color:red">
         {{ form.password2.errors }}
-        {% endif %}
-        </p>
+    </p>
     <button type="submit">Create User</button>
 </form>
 {% endblock content %}

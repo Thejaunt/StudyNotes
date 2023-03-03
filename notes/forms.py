@@ -1,12 +1,11 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm, UserChangeForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, UserChangeForm
 from .models import CustomUser
 from django.core.exceptions import ValidationError
 
 
 class CustomUserCreationForm(UserCreationForm):
-    email = forms.EmailField(label='email', required=True, max_length=150,
-                             widget=forms.EmailInput(attrs={'class': 'form-control'}))
+
     password1 = forms.CharField(label='password', strip=False, required=True, max_length=100,
                                 widget=forms.PasswordInput(attrs={'class': 'form-control'}))
     password2 = forms.CharField(label='password confirmation', strip=False, required=True, max_length=100,
@@ -14,7 +13,7 @@ class CustomUserCreationForm(UserCreationForm):
 
     class Meta:
         model = CustomUser
-        fields = ('email', 'password1', 'password2')
+        fields = ('email',)
 
     def clean_password2(self):
         password1 = self.cleaned_data.get('password1')
@@ -29,6 +28,15 @@ class CustomUserCreationForm(UserCreationForm):
         if commit:
             user.save()
         return user
+
+
+class UserLoginForm(AuthenticationForm):
+    username = forms.EmailField(widget=forms.EmailInput, label='email')
+    password = forms.CharField(widget=forms.PasswordInput, label='password')
+
+    class Meta:
+        model = CustomUser
+        fields = ('email', 'password',)
 
 
 class CustomUserChangeForm(UserChangeForm):

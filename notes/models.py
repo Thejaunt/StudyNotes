@@ -42,6 +42,3 @@ class Tags(models.Model):
 class NotesTags(models.Model):
     tags_id = models.ForeignKey(Notes, on_delete=models.CASCADE)
     notes_id = models.ForeignKey(Tags, on_delete=models.CASCADE)
-
-
-

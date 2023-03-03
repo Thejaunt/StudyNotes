@@ -62,7 +62,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'StudyNotes.wsgi.application'
 
 
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -122,7 +121,6 @@ STATICFILES_DIRS = [
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'notes.CustomUser'
-
 
 
 if DEBUG:
