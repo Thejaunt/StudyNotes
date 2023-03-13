@@ -7,45 +7,26 @@
     <title> {% block title %} Title {% endblock title %}</title>
 </head>
 <body>
-    {% block sidebar%}
-    <nav class="navbar">
-        <div>
-                <ul>
-                    <li>
-                        <a href="/">Home</a>
-                    </li>
-                </ul>
-        </div>
-            <div>
-                <ul>
-                    <li>
-                        {% if request.user.is_authenticated %}
-                        <a href="/logout">Logout</a>
-                        {% else %}
-                        <a href="/login">Login</a> | <a href="/register">Register</a>
-                        {% endif %}
-                    </li>
-                </ul>
-            </div>
-    </nav>
-    {% endblock sidebar %}
 
-    <div>
-        {% if messages %}
-            {% for message in messages %}
-                {% if message.tags == 'error' %}
-                    <div role="alert">
-                        {{ message }}
-                    </div>
-                {% else %}
-                    <div role="alert">
+{% include 'inc/_sidebar.html' %}
+
+<div>
+    {% if messages %}
+        {% for message in messages %}
+            {% if message.tags == 'error' %}
+                <div role="alert">
                     {{ message }}
-                    </div>
-                {% endif %}
-            {% endfor %}
-        {% endif %}
-        {% block content%}
-        {% endblock content %}
-    </div>
+                </div>
+            {% else %}
+                <div role="alert">
+                {{ message }}
+                </div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+{% block content%}
+{% endblock content %}
+</div>
 </body>
 </html>

@@ -4,6 +4,7 @@ from django.conf import settings
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as gl
 from .managers import CustomUserManager
+from django.db.models import UniqueConstraint
 
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
@@ -33,12 +34,21 @@ class Notes(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def __str__(self):
+        return self.title
+
 
 class Tags(models.Model):
     tag = models.CharField(max_length=80, unique=True)
     note = models.ManyToManyField(Notes, through='NotesTags')
 
+    def __str__(self):
+        return self.tag
+
 
 class NotesTags(models.Model):
     tags_id = models.ForeignKey(Notes, on_delete=models.CASCADE)
     notes_id = models.ForeignKey(Tags, on_delete=models.CASCADE)
+
+    class Meta:
+        UniqueConstraint(fields=['tags_id', 'notes_id'], name='unique_tags_notes')

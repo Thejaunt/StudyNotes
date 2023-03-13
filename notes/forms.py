@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, UserChangeForm
-from .models import CustomUser
+from .models import CustomUser, Notes
 from django.core.exceptions import ValidationError
 
 
@@ -30,7 +30,7 @@ class CustomUserCreationForm(UserCreationForm):
         return user
 
 
-class UserLoginForm(AuthenticationForm):
+class CustomUserLoginForm(AuthenticationForm):
     username = forms.EmailField(widget=forms.EmailInput, label='email')
     password = forms.CharField(widget=forms.PasswordInput, label='password')
 
@@ -42,4 +42,34 @@ class UserLoginForm(AuthenticationForm):
 class CustomUserChangeForm(UserChangeForm):
     class Meta:
         model = CustomUser
-        fields = ("email",)
+        fields = ("email", )
+
+
+class NotesForm(forms.ModelForm):
+    title = forms.CharField(label='Title')
+    description = forms.CharField(widget=forms.Textarea(attrs={'rows': 3}))
+    link = forms.CharField(widget=forms.URLInput, required=False)
+    is_public = forms.BooleanField(label='Public', help_text='Check the box too let everyone see this Note')
+    class Meta:
+        model = Notes
+        fields = ('title', 'description', 'link', 'is_public')
+
+
+class TagsForm(forms.Form):
+    tag = forms.CharField(max_length=210, label='Tags', required=False, help_text='separate tags using #,'
+                                                                                  ' max length of a tag 30 char,'
+                                                                                  ' \n example #sql #python')
+
+    def clean_tag(self):
+        tags: str = self.cleaned_data['tag']
+        if not tags:
+            return None
+        if tags.count('#') > 10:
+            raise ValidationError('Only 10 tags for a note is allowed')
+        if (tags.strip())[0] != "#":  # checks if it starts with '#'
+            raise ValidationError('Tags should start with #')
+        tag_list: list = (tags.strip()).split('#')
+        for i in tag_list:
+            if len(i) > 30:
+                raise ValidationError('one tag should be maximum 30 characters long')
+        return tags

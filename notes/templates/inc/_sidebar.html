@@ -1,0 +1,31 @@
+{% block sidebar%}
+<nav class="navbar">
+    <div>
+        <ul>
+            <li>
+                <a href="/">Home</a>
+            </li>
+        </ul>
+    </div>
+    {% if request.user.is_authenticated %}
+    <div>
+        <ul>
+            <li>
+                <a href="/create_note">Add note</a>
+            </li>
+        </ul>
+    </div>
+    <div>
+        <ul>
+            <li>
+                <a href="/logout">Logout</a>
+                {% else %}
+                <div><ul><li>
+                <a href="/login">Login</a> | <a href="/register">Register</a>
+                </li></ul></div>
+                {% endif %}
+            </li>
+        </ul>
+    </div>
+</nav>
+{% endblock sidebar %}
