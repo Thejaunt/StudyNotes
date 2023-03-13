@@ -77,3 +77,9 @@ def create_note_view(request):
         form = NotesForm()
         form2 = TagsForm()
     return render(request, 'create_note.html', {'form': form, 'form2': form2})
+
+
+def view_notes(request):
+    if request.user.is_authenticated:
+        notes = Notes.objects.all().filter(user=request.user).prefetch_related('tags_set').all()
+        return render(request, 'view_notes.html', {'notes': notes})

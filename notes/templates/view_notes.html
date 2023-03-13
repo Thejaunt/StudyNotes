@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block content %}
+USER: {{ request.user }}
+{% for note in notes %}
+<div>
+<p>title: {{ note.title }}</p>
+<p>description: {{ note.description }}</p>
+<p>link: {{ note.link }}</p>
+<p>public: {{ note.is_public }}</p>
+<p>tags:
+        {% for n in note.tags_set.all %}
+            #{{ n }}
+        {% endfor %}
+ </p>
+</div></br>
+{% endfor %}
+{% endblock content %}
