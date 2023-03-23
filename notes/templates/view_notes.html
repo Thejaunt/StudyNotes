@@ -13,6 +13,9 @@ USER: {{ request.user }}
             #{{ n }}
         {% endfor %}
  </p>
+<p>
+    <a href="{% url 'detail_view' note.pk %}">View</a>
+</p>
 </div></br>
 {% endfor %}
 {% endblock content %}

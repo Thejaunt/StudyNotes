@@ -47,8 +47,10 @@ class Tags(models.Model):
 
 
 class NotesTags(models.Model):
-    tags_id = models.ForeignKey(Notes, on_delete=models.CASCADE)
-    notes_id = models.ForeignKey(Tags, on_delete=models.CASCADE)
+    notes_id = models.ForeignKey(Notes, on_delete=models.CASCADE)
+    tags_id = models.ForeignKey(Tags, on_delete=models.CASCADE)
 
     class Meta:
         UniqueConstraint(fields=['tags_id', 'notes_id'], name='unique_tags_notes')
+
+

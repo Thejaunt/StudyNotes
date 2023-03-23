@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block content %}
+<div>
+    <h3>NOTE</h3>
+<div>title: {{ note.title }}</div>
+<div>description: {{ note.description }}</div>
+<div>link: {{ note.link }}</div>
+<div>public: {{ note.is_public }}</div>
+<h3>TAGS</h3>
+        {% for tg in note.tags_set.all %}
+            <div>{{ tg }}</div>
+        {% endfor %}
+
+<p>
+    <a href="{% url 'update_note' note.pk %}">Update</a>
+</p>
+</div>
+{% endblock content %}
