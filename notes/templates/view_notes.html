@@ -1,21 +1,27 @@
 {% extends 'base.html' %}
 
 {% block content %}
-USER: {{ request.user }}
+
 {% for note in notes %}
 <div>
-<p>title: {{ note.title }}</p>
-<p>description: {{ note.description }}</p>
-<p>link: {{ note.link }}</p>
-<p>public: {{ note.is_public }}</p>
-<p>tags:
+    <div>Posted by: {{ note.user }}</div>
+    <div>title: {{ note.title }}</div>
+    <div>link: {{ note.link }}</div>
+    <div>description: {{ note.description }}</div>
+
+    <div>public: {{ note.is_public }}</div>
+    <div>tags:
         {% for n in note.tags_set.all %}
-            #{{ n }}
+        <div>{{ n }}</div>
         {% endfor %}
- </p>
-<p>
-    <a href="{% url 'detail_view' note.pk %}">View</a>
-</p>
+    </div>
+    <div>
+        {% if note.is_public %}
+        <a href="{% url 'public_detail_view' note.pk %}">View</a>
+        {% else %}
+        <a href="{% url 'personal_detail_view' note.pk %}">View</a>
+        {% endif %}
+    </div>
 </div></br>
 {% endfor %}
 {% endblock content %}

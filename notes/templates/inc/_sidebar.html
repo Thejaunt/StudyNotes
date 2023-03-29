@@ -1,39 +1,23 @@
 {% block sidebar%}
-<nav class="navbar">
-    <div>
-        <ul>
-            <li>
-                <a href="/">Home</a>
-            </li>
-        </ul>
-    </div>
+<div>
     {% if request.user.is_authenticated %}
     <div>
-        <ul>
-            <li>
-                <a href="/create_note">Add note</a>
-            </li>
-        </ul>
+        <a href="/create_note">Add note</a>
     </div>
     <div>
-        <ul>
-            <li>
-                <a href="/view_notes">View notes</a>
-                <a href="/view_all_public_notes">View all public notes</a>
-            </li>
-        </ul>
+        <a href="/personal_notes">Personal Notes</a>
     </div>
     <div>
-        <ul>
-            <li>
-                <a href="/logout">Logout</a>
-                {% else %}
-                <div><ul><li>
-                <a href="/login">Login</a> | <a href="/register">Register</a>
-                </li></ul></div>
-                {% endif %}
-            </li>
-        </ul>
+        <a href="/public_notes">Public Notes</a>
     </div>
-</nav>
+    <div>
+        <a href="/logout">Logout</a>
+    </div>
+    {% else %}
+    <div>
+        <a href="/public_notes">Public Notes</a>
+    </div>
+    {% endif %}
+</div>
+
 {% endblock sidebar %}

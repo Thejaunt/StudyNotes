@@ -70,3 +70,6 @@ class TagsForm(forms.Form):
         if len(tag) > 30:
             raise ValidationError("one tag should be maximum 30 characters long")
         return " ".join(tag.split()).lower()
+
+
+

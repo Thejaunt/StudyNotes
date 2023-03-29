@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .forms import CustomUserCreationForm, CustomUserChangeForm
-from .models import CustomUser
+from .forms import CustomUserCreationForm, CustomUserChangeForm, NotesForm, TagsForm
+from .models import CustomUser, Tags, Notes, NotesTags
 
 
 class CustomUserAdmin(UserAdmin):
@@ -27,4 +27,19 @@ class CustomUserAdmin(UserAdmin):
     ordering = ("email",)
 
 
-admin.site.register(CustomUser, CustomUserAdmin)
+class NotesAdmin(admin.ModelAdmin):
+    form = NotesForm
+    model = Notes
+    list_display = ("title", "description", "link", "is_public", "created_at", "updated_at",)
+
+
+class TagsAdmin(admin.ModelAdmin):
+    form = TagsForm
+    model = Tags
+    list_display = "__all__"
+
+
+admin.site.register(CustomUser)
+admin.site.register(Tags)
+admin.site.register(Notes)
+admin.site.register(NotesTags)

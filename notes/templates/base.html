@@ -7,26 +7,26 @@
     <title> {% block title %} Title {% endblock title %}</title>
 </head>
 <body>
-
-{% include 'inc/_sidebar.html' %}
+{% include "inc/_nav.html" %}
+{% include "inc/_sidebar.html" %}
 
 <div>
     {% if messages %}
-        {% for message in messages %}
-            {% if message.tags == 'error' %}
-                <div role="alert">
-                    {{ message }}
-                </div>
-            {% else %}
-                <div role="alert">
-                {{ message }}
-                </div>
-            {% endif %}
-        {% endfor %}
+    {% for message in messages %}
+    {% if message.tags == 'error' %}
+    <div role="alert">
+        {{ message }}
+    </div>
+    {% else %}
+    <div role="alert">
+        {{ message }}
+    </div>
+    {% endif %}
+    {% endfor %}
     {% endif %}
 
-{% block content%}
-{% endblock content %}
+    {% block content%}
+    {% endblock content %}
 </div>
 </body>
 </html>

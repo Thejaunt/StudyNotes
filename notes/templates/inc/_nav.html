@@ -1,0 +1,21 @@
+<nav class="navbar">
+    <div>
+        <a href="/">Home</a>
+    </div>
+    <div>
+        {% if request.user.is_authenticated %}
+        <div>
+            <img class="profile-image" src="{{ request.user.profile_img.url }}" alt="Profile photo" width="50" height="50">
+        </div>
+        <div>
+            <a href="/logout">Logout</a>
+        </div>
+
+        {% else %}
+        <div>
+            <a href="/accounts/login/">Login</a> | <a href="/register">Register</a>
+        </div>
+
+        {% endif %}
+    </div>
+</nav>

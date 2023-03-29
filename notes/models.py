@@ -5,10 +5,16 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as gl
 from .managers import CustomUserManager
 from django.db.models import UniqueConstraint
+import os
 
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
-    # profile_img = models.ImageField()
+    def user_dir_path(self, instance=None):
+        if instance:
+            return os.path.join('Users', str(self.pk), instance)
+        return None
+
+    profile_img = models.ImageField(upload_to=user_dir_path, blank=True, null=True, max_length=255)
     email = models.EmailField(gl('email address'), unique=True, max_length=100)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
@@ -27,12 +33,12 @@ class Notes(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=100)
     description = models.TextField(max_length=5000)
-    image = models.ImageField()
     # video 
     link = models.URLField()
     is_public = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    objects = models.Manager()
 
     def __str__(self):
         return self.title
@@ -41,6 +47,7 @@ class Notes(models.Model):
 class Tags(models.Model):
     tag = models.CharField(max_length=80, unique=True)
     note = models.ManyToManyField(Notes, through='NotesTags')
+    objects = models.Manager()
 
     def __str__(self):
         return self.tag
@@ -52,5 +59,3 @@ class NotesTags(models.Model):
 
     class Meta:
         UniqueConstraint(fields=['tags_id', 'notes_id'], name='unique_tags_notes')
-
-

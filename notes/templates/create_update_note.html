@@ -16,7 +16,7 @@
         <div class="tag-form" >
             {{ form.tag }}
         </div>
-        {% endfor %}
+    {% endfor %}
     </div>
 
     <div id="empty-form" class="hidden">{{ formset.empty_form }}</div>
@@ -37,7 +37,7 @@
         const currentIngredientForms = document.getElementsByClassName("tag-form")
         const currentFormCount = currentIngredientForms.length-1
         if (currentFormCount >= 10){
-            return 0 }
+            return }
         const formCopyTarget = document.getElementById("tag-form-list")
         const copyEmptyFormEl = document.getElementById("empty-form").cloneNode(true)
         copyEmptyFormEl.setAttribute("class", "tag-form")

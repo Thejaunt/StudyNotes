@@ -1,10 +1,11 @@
-from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
+from django.shortcuts import render, redirect, get_object_or_404
 from .forms import CustomUserCreationForm, CustomUserLoginForm, NotesForm, TagsForm
 from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
-from .models import Notes, Tags, CustomUser, NotesTags
+from .models import Notes, Tags, CustomUser
 from django.urls import reverse
-from django.forms import formset_factory, modelform_factory
+from django.forms import formset_factory
+from django.contrib.auth.decorators import login_required
 
 
 def home(request):
@@ -12,6 +13,8 @@ def home(request):
 
 
 def register(request):
+    if request.user.is_authenticated:
+        return redirect("home")
     if request.method == "POST":
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
@@ -50,26 +53,30 @@ def user_logout(request):
     return redirect("login")
 
 
-def view_notes(request):
-    if request.user.is_authenticated:
-        notes = Notes.objects.filter(user=request.user).prefetch_related("tags_set")
-        return render(request, "view_notes.html", {"notes": notes})
+@login_required
+def view_personal_notes(request):
+    notes = Notes.objects.filter(user=request.user).prefetch_related("tags_set")
+    return render(request, "view_notes.html", {"notes": notes})
 
 
 def view_all_public_notes(request):
-    if request.user.is_authenticated:
-        notes = Notes.objects.filter(is_public=True).prefetch_related("tags_set")
-        return render(request, "view_all_public_notes.html", {"notes": notes})
+    notes = Notes.objects.filter(is_public=True).prefetch_related("tags_set")
+    return render(request, "view_notes.html", {"notes": notes})
 
 
-def note_detail_view(request, pk):
-    note = get_object_or_404(Notes, pk=pk)
+def public_note_detail_view(request, pk):
+    note = get_object_or_404(Notes.objects.prefetch_related("tags_set"), pk=pk, is_public=True)
     return render(request, "note_detail_view.html", {"note": note})
 
 
+@login_required
+def personal_note_detail_view(request, pk):
+    note = get_object_or_404(Notes.objects.prefetch_related("tags_set"), user=request.user, pk=pk)
+    return render(request, "note_detail_view.html", {"note": note})
+
+
+@login_required
 def update_note(request, pk):
-    if not request.user.is_authenticated:
-        return HttpResponse('Page not found')
     data = {
         "form-TOTAL_FORMS": "1",
         "form-INITIAL_FORMS": "0",
@@ -97,10 +104,11 @@ def update_note(request, pk):
                     tags_list.append(tag_obj)
             obj.tags_set.set(tags_list)
             obj.save()
-        return redirect(reverse("detail_view", args=[obj.pk]))
-    return render(request, "create_note.html", {"form": form, "formset": formset})
+        return redirect(reverse("personal_detail_view", args=[obj.pk]))
+    return render(request, "create_update_note.html", {"form": form, "formset": formset})
 
 
+@login_required
 def create_note_view(request):
     data = {
         "form-TOTAL_FORMS": "1",
@@ -119,7 +127,7 @@ def create_note_view(request):
 
             if not any(bool(f.cleaned_data) for f in formset):
                 """if all tags empty - create note and redirect to detail view page"""
-                return redirect(reverse("detail_view", args=[note.pk]))
+                return redirect(reverse("personal_detail_view", args=[note.pk]))
 
             tags_list = []
             for f in formset:
@@ -127,9 +135,18 @@ def create_note_view(request):
                     tag_obj, created = Tags.objects.get_or_create(tag=f.cleaned_data["tag"])
                     tags_list.append(tag_obj)
             note.tags_set.add(*tags_list)
-            return redirect(reverse("detail_view", args=[note.pk]))
+            return redirect(reverse("personal_detail_view", args=[note.pk]))
 
     else:
         formset = TagsFormSet(data)
         form = NotesForm()
-    return render(request, "create_note.html", {"form": form, "formset": formset})
+    return render(request, "create_update_note.html", {"form": form, "formset": formset})
+
+
+@login_required
+def delete_note_view(request, pk):
+    note = get_object_or_404(Notes.objects.prefetch_related("tags_set"), pk=pk, user=request.user)
+    if request.method == "POST":
+        note.delete()
+        return redirect("view_notes")
+    return render(request, "delete_note.html", {"note": note})

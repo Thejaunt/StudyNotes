@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div>
+    <form method="POST">
+        {% csrf_token %}
+        <h2>
+            Are you sure you want to delete this note?
+        </h2>
+        <a href="{% url 'detail_view' note.pk %}" type="btn">Cancel</a>
+        <input type="submit" value="Delete">
+    </form>
+    <h3>NOTE</h3>
+    <div>title: {{ note.title }}</div>
+    <div>description: {{ note.description }}</div>
+    <div>link: {{ note.link }}</div>
+    <div>public: {{ note.is_public }}</div>
+    <h3>TAGS</h3>
+    {% for tg in note.tags_set.all %}
+    <div>{{ tg }}</div>
+    {% endfor %}
+</div>
+{% endblock content %}
