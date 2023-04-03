@@ -1,11 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .forms import CustomUserCreationForm, CustomUserLoginForm, NotesForm, TagsForm
+from .forms import CustomUserCreationForm, CustomUserLoginForm, NotesForm, TagsForm, ProfileImageForm
 from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
 from .models import Notes, Tags, CustomUser
 from django.urls import reverse
 from django.forms import formset_factory
 from django.contrib.auth.decorators import login_required
+from django.db.models import Count
 
 
 def home(request):
@@ -55,17 +56,17 @@ def user_logout(request):
 
 @login_required
 def view_personal_notes(request):
-    notes = Notes.objects.filter(user=request.user).prefetch_related("tags_set")
+    notes = Notes.objects.select_related('user').filter(user=request.user).prefetch_related("tags_set")
     return render(request, "view_notes.html", {"notes": notes})
 
 
 def view_all_public_notes(request):
-    notes = Notes.objects.filter(is_public=True).prefetch_related("tags_set")
+    notes = Notes.objects.select_related('user').filter(is_public=True).prefetch_related("tags_set")
     return render(request, "view_notes.html", {"notes": notes})
 
 
 def public_note_detail_view(request, pk):
-    note = get_object_or_404(Notes.objects.prefetch_related("tags_set"), pk=pk, is_public=True)
+    note = get_object_or_404(Notes.objects.select_related('user').prefetch_related("tags_set"), pk=pk, is_public=True)
     return render(request, "note_detail_view.html", {"note": note})
 
 
@@ -118,7 +119,7 @@ def create_note_view(request):
     }
     TagsFormSet = formset_factory(TagsForm)
     if request.method == "POST" and request.user.is_authenticated:
-        user_obj = get_object_or_404(CustomUser, email=request.user)
+        user_obj = get_object_or_404(CustomUser, email=request.user.email)
         form = NotesForm(data=request.POST)
         formset = TagsFormSet(request.POST)
 
@@ -126,13 +127,13 @@ def create_note_view(request):
             note = Notes.objects.create(user=user_obj, **form.cleaned_data)
 
             if not any(bool(f.cleaned_data) for f in formset):
-                """if all tags empty - create note and redirect to detail view page"""
+                """if all tags are empty - create note and redirect to detail view page"""
                 return redirect(reverse("personal_detail_view", args=[note.pk]))
 
             tags_list = []
             for f in formset:
                 if bool(f.cleaned_data.get("tag")):
-                    tag_obj, created = Tags.objects.get_or_create(tag=f.cleaned_data["tag"])
+                    tag_obj, created = Tags.objects.get_or_create(tag=f.cleaned_data.get("tag"))
                     tags_list.append(tag_obj)
             note.tags_set.add(*tags_list)
             return redirect(reverse("personal_detail_view", args=[note.pk]))
@@ -150,3 +151,23 @@ def delete_note_view(request, pk):
         note.delete()
         return redirect("view_notes")
     return render(request, "delete_note.html", {"note": note})
+
+
+@login_required
+def profile_view(request):
+    notes = Notes.objects.prefetch_related("tags_set").filter(user=request.user).annotate(t_count=Count('tags'))
+    total_notes = notes.count()
+    total_tags = sum(t.t_count for t in notes)
+    return render(request, "profile.html", {"total_notes": total_notes, "total_tags": total_tags})
+
+
+@login_required
+def update_profile_img(request):
+    user_obj = get_object_or_404(CustomUser, email=request.user.email)
+    form = ProfileImageForm(request.POST or None, request.FILES or None, instance=user_obj)
+    if request.method == "POST":
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profile image has been updated")
+            return redirect('profile')
+    return render(request, "update_profile_img.html", {"form": form})

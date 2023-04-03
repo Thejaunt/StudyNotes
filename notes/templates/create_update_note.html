@@ -8,10 +8,10 @@
 </style>
 <form id="form-container" class="tag-form" method="POST">
     {% csrf_token %}
-        <h3>NOTE</h3>
+    <h3>NOTE</h3>
        <div> {{ form.as_p }}</div>
     <h3>TAGS</h3>{{ formset.management_form }}
-    <div id="tag-form-list">
+        <div id="tag-form-list">
     {% for form in formset %}
         <div class="tag-form" >
             {{ form.tag }}

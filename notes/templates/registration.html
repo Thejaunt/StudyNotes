@@ -5,6 +5,13 @@
 <form method="POST">
     {% csrf_token %}
     <div>
+        {{ form.username }}
+        <label>Username</label>
+    </div>
+     <p style="color:red;">
+        {{ form.username.errors }}
+        </p>
+    <div>
         {{ form.email }}
         <label>Email</label>
     </div>
