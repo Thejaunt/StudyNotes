@@ -39,6 +39,8 @@ class Notes(models.Model):
     is_public = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    likes = models.ManyToManyField(settings.AUTH_USER_MODEL, through="UserLikes", related_name="note_likes")
+
     objects = models.Manager()
 
     def __str__(self):
@@ -59,4 +61,12 @@ class NotesTags(models.Model):
     tags_id = models.ForeignKey(Tags, on_delete=models.CASCADE)
 
     class Meta:
-        UniqueConstraint(fields=['tags_id', 'notes_id'], name='unique_tags_notes')
+        UniqueConstraint(fields=["tags_id", "notes_id"], name="unique_tags_notes")
+
+
+class UserLikes(models.Model):
+    notes = models.ForeignKey(Notes, on_delete=models.CASCADE)
+    users = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+
+    class Meta:
+        UniqueConstraint(fields=["notes", "users"], name="unique_notes_users")
