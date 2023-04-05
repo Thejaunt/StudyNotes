@@ -27,7 +27,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     objects = CustomUserManager()
 
     def __str__(self):
-        return str(f"{self.username}: {self.email}")
+        return f"{self.username}"
 
 
 class Notes(models.Model):
@@ -43,6 +43,23 @@ class Notes(models.Model):
 
     objects = models.Manager()
 
+    def add_like(self, user_id):
+        user = CustomUser.objects.get(id=user_id)
+        like, created = UserLikes.objects.get_or_create(notes=self, users=user)
+        if not created and like.value == "Unlike":
+            like.value = "Like"
+            like.save()
+        self.likes.add(user)
+
+    def remove_like(self, user_id):
+        user = CustomUser.objects.get(id=user_id)
+        like = UserLikes.objects.get(notes=self, users=user)
+        if like:
+            if like.value == "Like":
+                like.value = "Unlike"
+                like.save()
+            self.likes.remove(user)
+
     def __str__(self):
         return self.title
 
@@ -50,6 +67,7 @@ class Notes(models.Model):
 class Tags(models.Model):
     tag = models.CharField(max_length=80, unique=True)
     note = models.ManyToManyField(Notes, through='NotesTags')
+
     objects = models.Manager()
 
     def __str__(self):
@@ -64,9 +82,18 @@ class NotesTags(models.Model):
         UniqueConstraint(fields=["tags_id", "notes_id"], name="unique_tags_notes")
 
 
+LIKE_CHOICES = (
+    ("Like", "Like"),
+    ("Unlike", "Unlike"),
+    )
+
+
 class UserLikes(models.Model):
     notes = models.ForeignKey(Notes, on_delete=models.CASCADE)
     users = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    value = models.CharField(choices=LIKE_CHOICES, max_length=8, default="Unlike")
+
+    objects = models.Manager()
 
     class Meta:
         UniqueConstraint(fields=["notes", "users"], name="unique_notes_users")

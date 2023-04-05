@@ -1,14 +1,49 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block content %}
 <div>
+    <div>created: {{ note.created_at|date:"d b Y, H:i" }}</div>
+    <div>last updated: {{ note.updated_at|date:"Y-b-d H:i" }}</div>
     <div>title: {{ note.title }}</div>
     <div>link: {{ note.link }}</div>
     <div>description: {{ note.description }}</div>
     <div>public: {{ note.is_public }}</div>
     <div><h3>TAGS</h3>
+        
         {% for tg in note.tags_set.all %}
         <div>{{ tg }}</div>
+
         {% endfor %}
+    </div>
+    <div>
+        {% if note.is_public and request.user != note.user and request.user.is_authenticated %}
+            <div>
+                <form method="POST" action="{% url 'like_note' %}" class="like-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="note_id" value={{note.id}}>
+                    <input type="hidden" name="page" value="detail">
+
+                    {% if request.user not in note.likes.all %}
+                        <button type="submit" style="border: none; appearance: none; background-color: inherit;">
+                            <img src="{% static 'img/like-btn-not-liked.png' %}" width="30" height="30">
+                        </button>
+                        {{ note.likes.count }}
+                    
+                    {% else %}
+                        <button type="submit" style="border: none; appearance: none; background-color: inherit;">
+                            <img src="{% static 'img/like-btn-liked.png' %}" width="30" height="30">
+                        </button>
+                        {{ note.likes.count }}
+                    
+                    {% endif %}
+                </form>
+            </div>
+
+        {% else %}
+
+            <div><img src="{% static 'img/like-btn-not-liked.png' %}" width="30" height="30"> {{ note.likes.count }}</div>
+
+        {% endif %}
     </div>
     {% if request.user == note.user %}
     <div>

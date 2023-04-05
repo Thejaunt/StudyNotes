@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-
+{% load static %}
 {% block content %}
 
 {% for note in notes %}
@@ -10,18 +10,47 @@
     <div>description: {{ note.description }}</div>
 
     <div>public: {{ note.is_public }}</div>
+
+
     <div>tags:
-        {% for n in note.tags_set.all %}
-        <div>{{ n }}</div>
+        {% for tg in note.tags_set.all %}
+            <div>{{ tg }}</div>
         {% endfor %}
     </div>
     <div>
-        {% if note.is_public %}
-        <a href="{% url 'public_detail_view' note.pk %}">View</a>
+        {% if note.is_public and request.user != note.user and request.user.is_authenticated%}
+
+            <div>
+                <form method="POST" action="{% url 'like_note' %}" class="like-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="note_id" value={{note.id}}>
+
+                    {% if request.user not in note.likes.all %}
+                        <button type="submit" style="border: none; appearance: none; background-color: inherit;">
+                            <img src="{% static 'img/like-btn-not-liked.png' %}" width="30" height="30">
+                        </button>
+                        {{ note.likes.count }}
+
+                    {% else %}
+                        <button  type="submit" style="border: none; appearance: none; background-color: inherit;">
+                            <img src="{% static 'img/like-btn-liked.png' %}" width="30" height="30">
+                        </button>
+                        {{ note.likes.count }}
+
+                    {% endif %}
+                </form>
+            </div>
+            <div><a href="{% url 'public_detail_view' note.pk %}">View</a></div>
+
         {% else %}
-        <a href="{% url 'personal_detail_view' note.pk %}">View</a>
+
+        <div><img src="{% static 'img/like-btn-not-liked.png' %}" width="30" height="30"> {{ note.likes.count }}</div>
+        <div><a href="{% url 'personal_detail_view' note.pk %}">View</a></div>
+
         {% endif %}
-    </div>
-</div></br>
+    </div> 
+</div><br>
 {% endfor %}
 {% endblock content %}
+
+

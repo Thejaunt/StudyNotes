@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .forms import CustomUserCreationForm, CustomUserLoginForm, NotesForm, TagsForm, ProfileImageForm
 from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
-from .models import Notes, Tags, CustomUser
+from .models import Notes, Tags, CustomUser, UserLikes
 from django.urls import reverse
 from django.forms import formset_factory
 from django.contrib.auth.decorators import login_required
@@ -56,23 +56,33 @@ def user_logout(request):
 
 @login_required
 def view_personal_notes(request):
-    notes = Notes.objects.select_related('user').filter(user=request.user).prefetch_related("tags_set")
+    notes = Notes.objects.select_related('user').filter(user=request.user)\
+        .prefetch_related("tags_set")\
+        .prefetch_related("likes")
     return render(request, "view_notes.html", {"notes": notes})
 
 
 def view_all_public_notes(request):
-    notes = Notes.objects.select_related('user').filter(is_public=True).prefetch_related("tags_set")
+    notes = Notes.objects.select_related('user').filter(is_public=True)\
+        .prefetch_related("tags_set")\
+        .prefetch_related("likes")
     return render(request, "view_notes.html", {"notes": notes})
 
 
 def public_note_detail_view(request, pk):
-    note = get_object_or_404(Notes.objects.select_related('user').prefetch_related("tags_set"), pk=pk, is_public=True)
+    note = get_object_or_404(Notes.objects.select_related('user')
+                             .prefetch_related("tags_set")
+                             .prefetch_related('likes'),
+                             pk=pk, is_public=True)
     return render(request, "note_detail_view.html", {"note": note})
 
 
 @login_required
 def personal_note_detail_view(request, pk):
-    note = get_object_or_404(Notes.objects.prefetch_related("tags_set"), user=request.user, pk=pk)
+    note = get_object_or_404(Notes.objects.prefetch_related("tags_set")
+                             .prefetch_related("likes")
+                             .select_related('user'),
+                             user=request.user, pk=pk)
     return render(request, "note_detail_view.html", {"note": note})
 
 
@@ -171,3 +181,22 @@ def update_profile_img(request):
             messages.success(request, "Profile image has been updated")
             return redirect('profile')
     return render(request, "update_profile_img.html", {"form": form})
+
+
+@login_required
+def like_view(request):
+    if request.method == "POST":
+        note_id = request.POST.get("note_id")
+        note_obj = get_object_or_404(Notes.objects.select_related('user'), id=note_id)
+        user = request.user
+        if user in note_obj.likes.all():
+            note_obj.remove_like(user.id)
+        else:
+            note_obj.add_like(user.id)
+
+        if request.POST.get("page") == "detail":
+            return redirect("public_detail_view", note_obj.id)
+
+    return redirect("public_notes")
+
+
