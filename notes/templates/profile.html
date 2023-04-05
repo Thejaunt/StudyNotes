@@ -3,32 +3,30 @@
 
 {% block content %}
 {% if request.user.username %}
-<div>{{ request.user.username }}</div>
+    <div>{{ request.user.username }}</div>
+
 {% else %}
-<div>No name</div>
+    <div>No name</div>
+
 {% endif%}
+
 {% if request.user.profile_img %}
     <div>
         <img class="profile-image" src="{{ request.user.profile_img.url }}"
          alt="Profile photo" width="150" height="150">
     </div>
+
 {% else %}
     <div>
         <img class="profile-image" src="{% static 'img/dummy-profile-img.png' %}"
          alt="Profile photo" width="150" height="150">
     </div>
+
 {% endif %}
 
-<div>
-    <a href="profile/update_profile_img">Update image</a>
-</div>
-
-<div>total notes
-    {{ total_notes }}
-</div>
-<div>total tags
-    {{ total_tags }}
-</div>
+<div><a href="profile/update_profile_img">Update image</a></div>
+<div>total notes{{ total_notes }}</div>
+<div>total tags{{ total_tags }}</div>
 {% endblock content %}
 
 

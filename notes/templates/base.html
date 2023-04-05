@@ -14,13 +14,9 @@
     {% if messages %}
         {% for message in messages %}
             {% if message.tags == 'error' %}
-                <div role="alert">
-                {{ message }}
-                </div>
+                <div role="alert">{{ message }}</div>
             {% else %}
-                <div role="alert">
-            {{ message }}
-                </div>
+                <div role="alert">{{ message }}</div>
             {% endif %}
         {% endfor %}
     {% endif %}

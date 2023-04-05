@@ -34,8 +34,8 @@
         if (event) {
             event.preventDefault()
         }
-        const currentIngredientForms = document.getElementsByClassName("tag-form")
-        const currentFormCount = currentIngredientForms.length-1
+        const currentForms = document.getElementsByClassName("tag-form")
+        const currentFormCount = currentForms.length-1
         if (currentFormCount >= 10){
             return }
         const formCopyTarget = document.getElementById("tag-form-list")

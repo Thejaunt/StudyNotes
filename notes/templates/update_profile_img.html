@@ -5,17 +5,17 @@
     {% if request.user.profile_img %}
         <img class="profile-image" src="{{ request.user.profile_img.url }}"
              alt="Profile photo" width="200" height="200">
+
     {% else %}
         <img class="profile-image" src="{% static 'img/dummy-profile-img.png' %}"
              alt="Profile photo" width="200" height="200">
+
     {% endif %}
 </div>
+
 <form method="POST" enctype="multipart/form-data">
     {% csrf_token %}
     {{ form.as_div }}
-<!--        <div>{{ field }}</div>-->
-
-
 <button type="submit">Save</button>
 </form>
 
