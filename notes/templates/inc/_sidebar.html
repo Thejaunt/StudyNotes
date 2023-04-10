@@ -1,21 +1,11 @@
 {% block sidebar%}
 <div>
     {% if request.user.is_authenticated %}
-    <div>
-        <a href="/create_note">Add note</a>
-    </div>
-    <div>
-        <a href="/personal_notes">Personal Notes</a>
-    </div>
-    <div>
-        <a href="/public_notes">Public Notes</a>
-    </div>
-
+        <div><a href="/create_note">Add note</a></div>
+        <div><a href="/personal_notes">Personal Notes</a></div>
+        <div><a href="/public_notes">Public Notes</a></div>
     {% else %}
-    <div>
-        <a href="/public_notes">Public Notes</a>
-    </div>
+        <div><a href="/public_notes">Public Notes</a></div>
     {% endif %}
 </div>
-
 {% endblock sidebar %}

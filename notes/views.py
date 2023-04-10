@@ -1,16 +1,57 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import CustomUserCreationForm, CustomUserLoginForm, NotesForm, TagsForm, ProfileImageForm
-from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth import login, logout, authenticate, get_user_model
 from django.contrib import messages
 from .models import Notes, Tags, CustomUser, UserLikes
 from django.urls import reverse
 from django.forms import formset_factory
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count
+from django.template.loader import render_to_string
+from django.contrib.sites.shortcuts import get_current_site
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.core.mail import EmailMessage
+from .tokens import account_activation_token
 
 
 def home(request):
     return render(request, "index.html")
+
+
+def activate(request, uidb64, token):
+    usermodel = get_user_model()
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = usermodel.objects.get(pk=uid)
+    except(TypeError, ValueError, OverflowError, usermodel.DoesNotExist):
+        user = None
+
+    if user is not None and account_activation_token.check_token(user, token):
+        user.is_active = True
+        user.save()
+        messages.success(request, "Thank you for email confirmation")
+    else:
+        messages.error(request, "Activation link is invalid")
+    return redirect("home")
+
+
+def activate_email(request, user, to_email):
+    mail_subject = "Activate your user account."
+    message = render_to_string("template_activate_account.html", {
+        "user": user.email,
+        "domain": get_current_site(request).domain,
+        "uid": urlsafe_base64_encode(force_bytes(user.pk)),
+        "token": account_activation_token.make_token(user),
+        "protocol": "https" if request.is_secure() else "http"
+    })
+    email = EmailMessage(mail_subject, message, to=[to_email])
+    if email.send():
+        messages.success(request,
+                         f"{user}, please go to your email, {to_email} inbox and click on received activation link to"
+                         f" confirm and complete the registration. Note: Check your spam folder.")
+    else:
+        messages.error(request, f"Problem sending confirmation email to {to_email}, check if you typed it correctly")
 
 
 def register(request):
@@ -19,12 +60,17 @@ def register(request):
     if request.method == "POST":
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            login(request, user)
-            messages.success(request, "Registration successful")
+            user = form.save(commit=False)
+            user.is_active = False
+            user.save()
+            activate_email(request, user, form.cleaned_data.get("email"))
             return redirect("home")
         else:
-            messages.error(request, "Failed to register")
+            for key, error in list(form.errors.items()):
+                if key == "captcha" and error[0] == "This field is required.":
+                    messages.error(request, "You must pass the reCAPTCHA verification")
+                    continue
+                messages.error(request, "Failed to register")
     else:
         form = CustomUserCreationForm()
     return render(request, template_name="registration.html", context={"form": form})
@@ -34,7 +80,7 @@ def user_login(request):
     if request.user.is_authenticated:
         return redirect("home")
     if request.method == "POST":
-        form = CustomUserLoginForm(data=request.POST or None)
+        form = CustomUserLoginForm(data=request.POST)
         if form.is_valid():
             email = form.cleaned_data.get("username")
             password = form.cleaned_data.get("password")
@@ -42,7 +88,12 @@ def user_login(request):
             if user is not None:
                 login(request, user)
                 return redirect("home")
-            else:
+        else:
+            print(list(form.errors.items()))
+            for key, error in list(form.errors.items()):
+                if key == "captcha" and error[0] == "This field is required.":
+                    messages.error(request, "You must pass the reCAPTCHA verification")
+                    continue
                 messages.error(request, "Wrong email or password")
     else:
         form = CustomUserLoginForm()
@@ -96,13 +147,12 @@ def update_note(request, pk):
     }
     obj = get_object_or_404(Notes.objects.prefetch_related("tags_set"), user=request.user, pk=pk)
     form = NotesForm(request.POST or None, instance=obj)
-
-    TagsFormSet = formset_factory(TagsForm)
+    tags_formset = formset_factory(TagsForm)
     qs = obj.tags_set.all()
     data["form-TOTAL_FORMS"] = str(qs.count())
     for i in range(len(qs)):
         data[f"form-{i}-tag"] = qs[i]
-    formset = TagsFormSet(request.POST or data)
+    formset = tags_formset(request.POST or data)
 
     if request.method == "POST":
         if all([form.is_valid(), formset.is_valid()]):
@@ -127,11 +177,11 @@ def create_note_view(request):
         "form-MIN_NUM_FORMS": "0",
         "form-MAX_NUM_FORMS": "10",
     }
-    TagsFormSet = formset_factory(TagsForm)
+    tags_formset = formset_factory(TagsForm)
     if request.method == "POST" and request.user.is_authenticated:
         user_obj = get_object_or_404(CustomUser, email=request.user.email)
         form = NotesForm(data=request.POST)
-        formset = TagsFormSet(request.POST)
+        formset = tags_formset(request.POST)
 
         if form.is_valid() and formset.is_valid():
             note = Notes.objects.create(user=user_obj, **form.cleaned_data)
@@ -149,7 +199,7 @@ def create_note_view(request):
             return redirect(reverse("personal_detail_view", args=[note.pk]))
 
     else:
-        formset = TagsFormSet(data)
+        formset = tags_formset(data)
         form = NotesForm()
     return render(request, "create_update_note.html", {"form": form, "formset": formset})
 
@@ -198,5 +248,3 @@ def like_view(request):
             return redirect("public_detail_view", note_obj.id)
 
     return redirect("public_notes")
-
-

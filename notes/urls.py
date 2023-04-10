@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import home, register, user_login, user_logout, create_note_view, view_personal_notes,\
     view_all_public_notes,personal_note_detail_view, update_note, delete_note_view, public_note_detail_view,\
-    profile_view, update_profile_img, like_view
+    profile_view, update_profile_img, like_view, activate
 
 
 urlpatterns = [
@@ -19,5 +19,6 @@ urlpatterns = [
     path("profile", profile_view, name="profile"),
     path("profile/update_profile_img", update_profile_img, name="profile_img_update"),
     path("like", like_view, name="like_note"),
+    path("activate/<uidb64>/<token>", activate, name="activate")
 ]
 

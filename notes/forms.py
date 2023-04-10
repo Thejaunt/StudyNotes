@@ -2,6 +2,8 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, UserChangeForm
 from .models import CustomUser, Notes, Tags
 from django.core.exceptions import ValidationError
+from captcha.fields import ReCaptchaField
+from captcha.widgets import ReCaptchaV2Checkbox
 import imghdr
 
 
@@ -11,11 +13,11 @@ class CustomUserCreationForm(UserCreationForm):
                                 widget=forms.PasswordInput(attrs={"class": "form-control"}))
     password2 = forms.CharField(label="password confirmation", strip=False, required=True, max_length=100,
                                 widget=forms.PasswordInput(attrs={"class": "form-control"}))
-    username = forms.CharField(label="username", required=False, max_length=40)
+    captcha = ReCaptchaField(widget=ReCaptchaV2Checkbox())
 
     class Meta:
         model = CustomUser
-        fields = ("email", "username",)
+        fields = ("email", "name")
 
     def clean_password2(self):
         password1 = self.cleaned_data.get("password1")
@@ -35,6 +37,7 @@ class CustomUserCreationForm(UserCreationForm):
 class CustomUserLoginForm(AuthenticationForm):
     username = forms.EmailField(widget=forms.EmailInput, label="email")
     password = forms.CharField(widget=forms.PasswordInput, label="password")
+    captcha = ReCaptchaField(widget=ReCaptchaV2Checkbox())
 
     class Meta:
         model = CustomUser
@@ -44,7 +47,7 @@ class CustomUserLoginForm(AuthenticationForm):
 class CustomUserChangeForm(UserChangeForm):
     class Meta:
         model = CustomUser
-        fields = ("email", )
+        fields = ("email",)
 
 
 class NotesForm(forms.ModelForm):

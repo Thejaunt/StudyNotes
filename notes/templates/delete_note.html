@@ -4,9 +4,7 @@
 <div>
     <form method="POST">
         {% csrf_token %}
-        <h2>
-            Are you sure you want to delete this note?
-        </h2>
+        <h2>Are you sure you want to delete this note?</h2>
         <a href="{% url 'detail_view' note.pk %}" type="btn">Cancel</a>
         <input type="submit" value="Delete">
     </form>

@@ -1,32 +1,23 @@
 {% load static %}
 <nav class="navbar">
+    <div><a href="/">Home</a></div>
     <div>
-        <a href="/">Home</a>
-    </div>
-    <div>
-
         {% if request.user.is_authenticated %}
-        <div>
-            {{ request.user.username }}
-        </div>
-        <div>
-            <a href="/profile">
-            {% if request.user.profile_img %}
-                <img class="profile-image" src="{{ request.user.profile_img.url }}" alt="Profile photo" width="50" height="50">
-            {% else %}
-                <img class="profile-image" src="{% static 'img/dummy-profile-img.png' %}" alt="Profile photo" width="50" height="50">
-            {% endif %}
-            </a>
-        </div>
-        <div>
-            <a href="/logout">Logout</a>
-        </div>
-
+            <div>{{ request.user.name }}</div>
+                <div>
+                    <a href="/profile">
+                        {% if request.user.profile_img %}
+                            <img class="profile-image" src="{{ request.user.profile_img.url }}"
+                                 alt="Profile photo" width="50" height="50">
+                        {% else %}
+                            <img class="profile-image" src="{% static 'img/dummy-profile-img.png' %}"
+                                 alt="Profile photo" width="50" height="50">
+                        {% endif %}
+                    </a>
+                </div>
+            <div><a href="/logout">Logout</a></div>
         {% else %}
-        <div>
-            <a href="/accounts/login/">Login</a> <|> <a href="/register">Register</a>
-        </div>
+            <div><a href="/accounts/login/">Login</a> | <a href="/register">Register</a></div>
         {% endif %}
-
     </div>
 </nav>

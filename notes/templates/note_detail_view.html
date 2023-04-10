@@ -8,13 +8,13 @@
     <div>link: {{ note.link }}</div>
     <div>description: {{ note.description }}</div>
     <div>public: {{ note.is_public }}</div>
-    <div><h3>TAGS</h3>
-        
+    <div>
+        <h3>TAGS</h3>
         {% for tg in note.tags_set.all %}
         <div>{{ tg }}</div>
-
         {% endfor %}
     </div>
+
     <div>
         {% if note.is_public and request.user != note.user and request.user.is_authenticated %}
             <div>
@@ -38,11 +38,10 @@
                     {% endif %}
                 </form>
             </div>
-
         {% else %}
-
-            <div><img src="{% static 'img/like-btn-not-liked.png' %}" width="30" height="30"> {{ note.likes.count }}</div>
-
+            <div>
+                <img src="{% static 'img/like-btn-not-liked.png' %}" width="30" height="30"> {{ note.likes.count }}
+            </div>
         {% endif %}
     </div>
     {% if request.user == note.user %}

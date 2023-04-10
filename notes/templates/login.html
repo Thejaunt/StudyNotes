@@ -2,16 +2,18 @@
 {% block title %}Login{% endblock %}
 {% block content %}
 <h1>Login</h1>
-<form method="POST" autocomplete="off">
+<form method="POST">
     {% csrf_token %}
-     <div autocomplete="off">
-        <p>{{ form.username }}
-        <label>email</label></p>
-    </div>
-    <div autocomplete="off">
-        <p>{{ form.password }}
-        <label>password</label></p>
-    </div>
+
+    <div>{{ form.username }}<label> Email*</label></div>
+    <p style="color:red">{{ form.username.errors }}</p>
+
+    <div>{{ form.password }}<label> Password*</label></div>
+    <p style="color:red">{{ form.password.errors }}</p>
+
+    <div>{{ form.captcha }}</div>
+    <p style="color:red">{{ form.captcha.errors }}</p>
+
     <button type="submit">Login</button>
 </form>
 {% endblock content %}

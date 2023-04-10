@@ -1,37 +1,24 @@
 {% extends 'base.html' %}
+{% block title %}Registration{% endblock %}
 {% block content %}
-
 <h1>Registration</h1>
 <form method="POST">
     {% csrf_token %}
-    <div>
-        {{ form.username }}
-        <label>Username</label>
-    </div>
-     <p style="color:red;">
-        {{ form.username.errors }}
-        </p>
-    <div>
-        {{ form.email }}
-        <label>Email</label>
-    </div>
-    <p style="color:red;">
-        {{ form.email.errors }}
-        </p>
-    <div>
-        {{ form.password1 }}
-        <label>Password</label>
-    </div>
-        <p style="color:red;">
-        {{ form.password1.errors }}
-        </p>
-    <div>
-        {{ form.password2 }}
-        <label >Confirm password</label>
-    </div>
-    <p style="color:red">
-        {{ form.password2.errors }}
-    </p>
+    <div>{{ form.name }}<label> Username</label></div>
+    <p style="color:red;">{{ form.name.errors }}</p>
+
+    <div>{{ form.email }}<label> Email*</label></div>
+    <p style="color:red;">{{ form.email.errors }}</p>
+
+    <div>{{ form.password1 }}<label> Password*</label></div>
+    <p style="color:red;">{{ form.password1.errors }}</p>
+
+    <div>{{ form.password2 }}<label > Confirm password*</label></div>
+    <p style="color:red">{{ form.password2.errors }}</p>
+
+    <div>{{ form.captcha }}</div>
+    <p style="color:red">{{ form.captcha.errors }}</p>
+
     <button type="submit">Create User</button>
 </form>
 {% endblock content %}
