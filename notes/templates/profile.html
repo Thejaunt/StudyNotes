@@ -2,14 +2,14 @@
 {% load static %}
 
 {% block content %}
-{% if request.user.username %}
-    <div>{{ request.user.username }}</div>
+{% if request.user.name %}
+    <div>{{ request.user.name }}</div>
 
 {% else %}
     <div>No name</div>
 
 {% endif%}
-
+<div><a href="{% url 'profile_name_update' %}">Change Username</a></div>
 {% if request.user.profile_img %}
     <div>
         <img class="profile-image" src="{{ request.user.profile_img.url }}"
@@ -24,9 +24,10 @@
 
 {% endif %}
 
-<div><a href="profile/update_profile_img">Update image</a></div>
-<div>total notes{{ total_notes }}</div>
-<div>total tags{{ total_tags }}</div>
+<div><a href="{% url 'profile_img_update' %}">Update Image</a></div>
+<div><a href="{% url 'password_change' %}">Change Password</a></div>
+<div>Total notes {{ total_notes }}</div>
+<div>Total tags {{ total_tags }}</div>
 {% endblock content %}
 
 

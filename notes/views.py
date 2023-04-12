@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .forms import CustomUserCreationForm, CustomUserLoginForm, NotesForm, TagsForm, ProfileImageForm
+from .forms import CustomUserCreationForm, CustomUserLoginForm, NotesForm, TagsForm, ProfileImageForm, PasswordSetForm,\
+    PassResetForm, ProfileUsernameForm
 from django.contrib.auth import login, logout, authenticate, get_user_model
 from django.contrib import messages
-from .models import Notes, Tags, CustomUser, UserLikes
+from .models import Notes, Tags, CustomUser
 from django.urls import reverse
 from django.forms import formset_factory
 from django.contrib.auth.decorators import login_required
@@ -13,6 +14,7 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.core.mail import EmailMessage
 from .tokens import account_activation_token
+from django.db.models.query_utils import Q
 
 
 def home(request):
@@ -89,7 +91,6 @@ def user_login(request):
                 login(request, user)
                 return redirect("home")
         else:
-            print(list(form.errors.items()))
             for key, error in list(form.errors.items()):
                 if key == "captcha" and error[0] == "This field is required.":
                     messages.error(request, "You must pass the reCAPTCHA verification")
@@ -103,6 +104,121 @@ def user_login(request):
 def user_logout(request):
     logout(request)
     return redirect("login")
+
+
+@login_required
+def profile_view(request):
+    notes = Notes.objects.prefetch_related("tags_set").filter(user=request.user).annotate(tags_count=Count('tags'))
+    total_notes = notes.count()
+    total_tags = sum(tags.tags_count for tags in notes)
+    return render(request, "profile.html", {"total_notes": total_notes, "total_tags": total_tags})
+
+
+@login_required
+def update_profile_img(request):
+    user_obj = get_object_or_404(CustomUser, email=request.user.email)
+    form = ProfileImageForm(request.POST or None, request.FILES or None, instance=user_obj)
+    if request.method == "POST":
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profile image has been updated")
+            return redirect('profile')
+    return render(request, "update_profile_img.html", {"form": form})
+
+
+@login_required()
+def update_profile_name(request):
+    user_obj = get_object_or_404(CustomUser, email=request.user.email)
+    form = ProfileUsernameForm(request.POST or None, instance=user_obj)
+    if request.method == "POST":
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Username has been updated")
+            return redirect("profile")
+    return render(request, "update_profile_name.html", {"form": form})
+
+
+@login_required
+def password_change(request):
+    user = request.user
+    if request.method == "POST":
+        form = PasswordSetForm(user, request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Password has been changed")
+            return redirect("login")
+        else:
+            for error in list(form.errors.values()):
+                messages.error(request, error)
+
+    form = PasswordSetForm(user)
+    return render(request, "password_reset_confirm.html", {"form": form})
+
+
+def password_reset_request(request):
+    if request.method == "POST":
+        form = PassResetForm(request.POST)
+        if form.is_valid():
+            user_email = form.cleaned_data.get("email")
+            associated_user = get_user_model().objects.filter(Q(email=user_email)).first()
+            if associated_user:
+                subject = "Password Reset"
+                message = render_to_string("template_reset_password.html", {
+                    "user": associated_user,
+                    "domain": get_current_site(request).domain,
+                    "uid": urlsafe_base64_encode(force_bytes(associated_user.pk)),
+                    "token": account_activation_token.make_token(associated_user),
+                    "protocol": "https" if request.is_secure() else "http"
+                })
+                email = EmailMessage(subject, message, to=[associated_user.email])
+                if email.send():
+                    messages.success(request,
+                    """
+                        Password reset sent.
+                        We've emailed you instructions for setting your password,
+                        if an account exists with the email you entered.
+                        You should receive them shortly. If you don't receive an email,
+                        please make sure you've entered the  address you registered with, and check your spam folder.
+                    """
+                                     )
+                else:
+                    messages.error(request, "Problem sending reset password email")
+            return redirect("home")
+
+        for key, error in list(form.errors.items()):
+            if key == "captcha" and error[0] == "This field is required.":
+                messages.error(request, "You must pass the reCAPTCHA verification")
+                continue
+
+    form = PassResetForm()
+    return render(request, "password_reset.html", {"form": form})
+
+
+def password_reset_confirm(request, uidb64, token):
+    usermodel = get_user_model()
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = usermodel.objects.get(pk=uid)
+    except(TypeError, ValueError, OverflowError, usermodel.DoesNotExist):
+        user = None
+
+    if user is not None and account_activation_token.check_token(user, token):
+        if request.method == "POST":
+            form = PasswordSetForm(user, request.POST)
+            if form.is_valid():
+                form.save()
+                messages.success(request, "Your password has been reset")
+                return redirect("login")
+            else:
+                for error in list(form.errors.values()):
+                    messages.error(request, error)
+
+        form = PasswordSetForm(user)
+        return render(request, "password_reset_confirm.html", {"form": form})
+    else:
+        messages.error(request, "Link expired")
+    messages.error(request, "Something went wrong")
+    return redirect("home")
 
 
 @login_required
@@ -211,26 +327,6 @@ def delete_note_view(request, pk):
         note.delete()
         return redirect("view_notes")
     return render(request, "delete_note.html", {"note": note})
-
-
-@login_required
-def profile_view(request):
-    notes = Notes.objects.prefetch_related("tags_set").filter(user=request.user).annotate(t_count=Count('tags'))
-    total_notes = notes.count()
-    total_tags = sum(t.t_count for t in notes)
-    return render(request, "profile.html", {"total_notes": total_notes, "total_tags": total_tags})
-
-
-@login_required
-def update_profile_img(request):
-    user_obj = get_object_or_404(CustomUser, email=request.user.email)
-    form = ProfileImageForm(request.POST or None, request.FILES or None, instance=user_obj)
-    if request.method == "POST":
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Profile image has been updated")
-            return redirect('profile')
-    return render(request, "update_profile_img.html", {"form": form})
 
 
 @login_required

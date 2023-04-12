@@ -1,7 +1,8 @@
 from django.urls import path
 from .views import home, register, user_login, user_logout, create_note_view, view_personal_notes,\
     view_all_public_notes,personal_note_detail_view, update_note, delete_note_view, public_note_detail_view,\
-    profile_view, update_profile_img, like_view, activate
+    profile_view, update_profile_img, like_view, activate, password_change, password_reset_confirm,\
+    password_reset_request, update_profile_name
 
 
 urlpatterns = [
@@ -18,7 +19,12 @@ urlpatterns = [
     path("public_notes/detail_view/<int:pk>/", public_note_detail_view, name="public_detail_view"),
     path("profile", profile_view, name="profile"),
     path("profile/update_profile_img", update_profile_img, name="profile_img_update"),
+    path("profile/update_profile_name", update_profile_name, name="profile_name_update"),
     path("like", like_view, name="like_note"),
-    path("activate/<uidb64>/<token>", activate, name="activate")
+    path("activate/<uidb64>/<token>", activate, name="activate"),
+    path("password_change", password_change, name="password_change"),
+    path("password_reset", password_reset_request, name="password_reset"),
+    path("reset/<uidb64>/<token>", password_reset_confirm, name="password_reset_confirm"),
+
 ]
 

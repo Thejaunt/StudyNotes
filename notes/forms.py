@@ -1,5 +1,7 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, UserChangeForm
+from django.contrib.auth import get_user_model
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, UserChangeForm, SetPasswordForm,\
+    PasswordResetForm
 from .models import CustomUser, Notes, Tags
 from django.core.exceptions import ValidationError
 from captcha.fields import ReCaptchaField
@@ -16,7 +18,7 @@ class CustomUserCreationForm(UserCreationForm):
     captcha = ReCaptchaField(widget=ReCaptchaV2Checkbox())
 
     class Meta:
-        model = CustomUser
+        model = get_user_model()
         fields = ("email", "name")
 
     def clean_password2(self):
@@ -28,7 +30,7 @@ class CustomUserCreationForm(UserCreationForm):
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        user.set_password(self.cleaned_data["password1"])
+        user.set_password(self.cleaned_data.get("password1"))
         if commit:
             user.save()
         return user
@@ -40,8 +42,7 @@ class CustomUserLoginForm(AuthenticationForm):
     captcha = ReCaptchaField(widget=ReCaptchaV2Checkbox())
 
     class Meta:
-        model = CustomUser
-        fields = ("email", "password",)
+        model = get_user_model()
 
 
 class CustomUserChangeForm(UserChangeForm):
@@ -78,11 +79,17 @@ class TagsForm(forms.Form):
         return " ".join(tag.split()).lower()
 
 
+class ProfileUsernameForm(forms.ModelForm):
+    class Meta:
+        model = get_user_model()
+        fields = ("name",)
+
+
 class ProfileImageForm(forms.ModelForm):
     profile_img = forms.ImageField()
 
     class Meta:
-        model = CustomUser
+        model = get_user_model()
         fields = ("profile_img",)
 
     def clean_profile_img(self):
@@ -107,3 +114,19 @@ class ProfileImageForm(forms.ModelForm):
             raise ValidationError("Wrong mime-type of the image")
 
         return img
+
+
+class PasswordSetForm(SetPasswordForm):
+    captcha = ReCaptchaField(widget=ReCaptchaV2Checkbox())
+
+    class Meta:
+        model = get_user_model()
+        fields = ("new_password1", "new_password2",)
+
+
+class PassResetForm(PasswordResetForm):
+    email = forms.EmailField(widget=forms.EmailInput, label="email")
+    captcha = ReCaptchaField(widget=ReCaptchaV2Checkbox())
+
+    class Meta:
+        model = get_user_model()
