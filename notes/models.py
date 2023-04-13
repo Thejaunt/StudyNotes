@@ -6,7 +6,7 @@ from django.utils.translation import gettext_lazy as gl
 from .managers import CustomUserManager
 from django.db.models import UniqueConstraint
 import os
-
+from tinymce import models as tinymce_models
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     def user_dir_path(self, instance=None):
@@ -33,7 +33,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 class Notes(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=100)
-    description = models.TextField(max_length=5000)
+    description = tinymce_models.HTMLField()
     # video 
     link = models.URLField()
     is_public = models.BooleanField(default=False)

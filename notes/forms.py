@@ -53,7 +53,6 @@ class CustomUserChangeForm(UserChangeForm):
 
 class NotesForm(forms.ModelForm):
     title = forms.CharField(label="Title")
-    description = forms.CharField(widget=forms.Textarea(attrs={"rows": 3}))
     link = forms.CharField(widget=forms.URLInput, required=False)
     is_public = forms.BooleanField(label="Public",
                                    help_text="Check the box too let everyone see this Note", required=False)
