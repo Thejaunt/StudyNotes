@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "tinymce",
     "notes.apps.NotesConfig",
+    "accounts.apps.AccountsConfig",
     "django_cleanup.apps.CleanupConfig",
     "captcha",
 
@@ -71,7 +72,7 @@ DATABASES = {
 }
 
 # Password validation
-AUTH_USER_MODEL = "notes.CustomUser"
+AUTH_USER_MODEL = "accounts.CustomUser"
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",

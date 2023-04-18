@@ -1,22 +1,20 @@
 {% extends 'base.html' %}
 {% load static %}
+{% block title %}Notes{% endblock  %}
 {% block content %}
 
 {% for note in notes %}
 <div>
     <div>Posted by: {{ note.user }}</div>
-    <div>title: {{ note.title }}</div>
-    <div>link: {{ note.link }}</div>
-    <div>description: {{ note.description }}</div>
-
+    <div><h3>{{ note.title }}</h3></div>
+    <div>link: <a href="{{ note.link }}">{{ note.link|truncatewords:1 }}</a></div>
     <div>public: {{ note.is_public }}</div>
-
-
-    <div>tags:
+    <div><h4>TAGS</h4>
         {% for tg in note.tags_set.all %}
             <div>{{ tg }}</div>
         {% endfor %}
     </div>
+    <div><h4>DESCRIPTION:</h4> {{ note.description|safe|truncatewords:20 }}</div>
     <div>
         {% if note.is_public and request.user != note.user and request.user.is_authenticated%}
 
@@ -48,7 +46,7 @@
         <div><a href="{% url 'personal_detail_view' note.pk %}">View</a></div>
 
         {% endif %}
-    </div> 
+    </div>
 </div><br>
 {% endfor %}
 {% endblock content %}

@@ -1,20 +1,20 @@
 {% extends 'base.html' %}
 {% load static %}
+{% block title %}{{ note.title }}{% endblock %}
 {% block content %}
 <div>
     <div>created: {{ note.created_at|date:"d b Y, H:i" }}</div>
     <div>last updated: {{ note.updated_at|date:"Y-b-d H:i" }}</div>
-    <div>title: {{ note.title }}</div>
-    <div>link: {{ note.link }}</div>
-    <div>description: {{ note.description }}</div>
+    <div><h3>{{ note.title }}</h3></div>
+    <div>link: <a href="{{ note.link }}">{{ note.link }}</a></div>
     <div>public: {{ note.is_public }}</div>
     <div>
-        <h3>TAGS</h3>
+        <h4>TAGS</h4>
         {% for tg in note.tags_set.all %}
         <div>{{ tg }}</div>
         {% endfor %}
     </div>
-
+    <div><h4>DESCRIPTION:</h4> {{ note.description|safe }}</div>
     <div>
         {% if note.is_public and request.user != note.user and request.user.is_authenticated %}
             <div>

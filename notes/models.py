@@ -1,33 +1,9 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
+
 from django.conf import settings
-from django.utils import timezone
-from django.utils.translation import gettext_lazy as gl
-from .managers import CustomUserManager
 from django.db.models import UniqueConstraint
-import os
 from tinymce import models as tinymce_models
-
-class CustomUser(AbstractBaseUser, PermissionsMixin):
-    def user_dir_path(self, instance=None):
-        if instance:
-            return os.path.join('Users', str(self.pk), instance)
-        return None
-
-    profile_img = models.ImageField(upload_to=user_dir_path, blank=True, null=True, max_length=255)
-    name = models.CharField(default="No name", null=True, blank=False, max_length=40)
-    email = models.EmailField(gl('email address'), unique=True, max_length=100)
-    is_staff = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)
-    date_joined = models.DateTimeField(default=timezone.now)
-
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = []
-
-    objects = CustomUserManager()
-
-    def __str__(self):
-        return f"{self.email}"
+from accounts.models import CustomUser
 
 
 class Notes(models.Model):
